@@ -1,6 +1,13 @@
 import { mockUsers } from "./data/mockUsers";
+import { useState } from "react";
+import LockModal from "./components/lockModal";
 
 export default function App() {
+
+const [modalOpen, setModalOpen] = useState(false);
+const [action, setAction] = useState<"lock" | "unlock">("lock");
+const [selectedUser, setSelectedUser] = useState("");
+
   return (
     <main className="min-h-screen bg-white p-6 text-black">
       <section className="mx-auto max-w-6xl">
@@ -45,9 +52,16 @@ export default function App() {
                   </td>
 
                   <td className="px-4 py-4">
-                    <button className="rounded-lg hover:opacity-50 cursor-pointer bg-black px-4 py-2 text-sm font-medium text-white">
-                      {user.status === "locked" ? "Unlock" : "Lock"}
-                    </button>
+              <button
+                onClick={() => {
+                  setAction(user.status === "locked" ? "unlock" : "lock");
+                  setSelectedUser(user.name);
+                  setModalOpen(true);
+                }}
+                className="rounded-lg hover:opacity-50 hover:cursor-pointer bg-black px-4 py-2 text-white"
+              >
+                {user.status === "locked" ? "Unlock" : "Lock"}
+              </button>
                   </td>
                 </tr>
               ))}
@@ -55,6 +69,13 @@ export default function App() {
           </table>
         </div>
       </section>
+
+      <LockModal
+        open={modalOpen}
+        action={action}
+        userName={selectedUser}
+        onClose={() => setModalOpen(false)}
+      />
     </main>
   );
 }
