@@ -1,6 +1,7 @@
 import { mockUsers } from "./data/mockUsers";
 import { useState } from "react";
 import LockModal from "./components/lockModal";
+import AuditLogs from "./components/auditLogs";
 
 export default function App() {
 
@@ -67,6 +68,7 @@ const [selectedUser, setSelectedUser] = useState("");
               ))}
             </tbody>
           </table>
+          <AuditLogs/>
         </div>
       </section>
 
