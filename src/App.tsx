@@ -82,7 +82,20 @@ function handleConfirmAction() {
 
                   <td className="px-4 py-4 capitalize">{user.role}</td>
 
-                  <td className="px-4 py-4">{user.failedAttempts}</td>
+                  <td className="px-4 py-4">{user.failedAttempts}
+
+                    {
+                    user.failedAttempts >= 5 ? (
+                      <p className="text-xs text-red-500">
+                        Threshold reached
+                      </p>
+                    ) : (
+                      <p className="text-xs text-gray-400">
+                        Below threshold
+                      </p>
+                    )
+                  }
+                  </td>
 
                   <td className="px-4 py-4">
                     <span className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium capitalize">
@@ -92,13 +105,21 @@ function handleConfirmAction() {
 
                   <td className="px-4 py-4">
               <button
+                disabled={
+                  user.status === "active" &&
+                  user.failedAttempts < 5
+                }
                 onClick={() => {
                   setAction(user.status === "locked" ? "unlock" : "lock");
                   setSelectedUser(user.name);
                   setSelectedUserId(user.id);
                   setModalOpen(true);
                 }}
-                className="rounded-lg hover:opacity-50 hover:cursor-pointer bg-black px-4 py-2 text-white"
+                className={`rounded-lg px-4 py-2 text-white ${
+                  user.status === "active" && user.failedAttempts < 5
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-black"
+                }`}
               >
                 {user.status === "locked" ? "Unlock" : "Lock"}
               </button>
