@@ -1,6 +1,8 @@
+import { mockUsers } from "./data/mockUsers";
+
 export default function App() {
   return (
-    <main className="min-h-screen bg-white text-black p-6">
+    <main className="min-h-screen bg-white p-6 text-black">
       <section className="mx-auto max-w-6xl">
         <p className="text-sm text-gray-500">SOE 310 Project</p>
 
@@ -11,6 +13,47 @@ export default function App() {
         <p className="mt-2 text-gray-600">
           View users, monitor failed login attempts, and lock or unlock accounts.
         </p>
+
+        <div className="mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-white">
+          <table className="w-full border-collapse text-left text-sm">
+            <thead className="bg-black text-white">
+              <tr>
+                <th className="px-4 py-3">User</th>
+                <th className="px-4 py-3">Role</th>
+                <th className="px-4 py-3">Failed Attempts</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {mockUsers.map((user) => (
+                <tr key={user.id} className="border-t border-gray-200">
+                  <td className="px-4 py-4">
+                    <p className="font-medium">{user.name}</p>
+                    <p className="text-gray-500">{user.email}</p>
+                  </td>
+
+                  <td className="px-4 py-4 capitalize">{user.role}</td>
+
+                  <td className="px-4 py-4">{user.failedAttempts}</td>
+
+                  <td className="px-4 py-4">
+                    <span className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium capitalize">
+                      {user.status}
+                    </span>
+                  </td>
+
+                  <td className="px-4 py-4">
+                    <button className="rounded-lg hover:opacity-50 cursor-pointer bg-black px-4 py-2 text-sm font-medium text-white">
+                      {user.status === "locked" ? "Unlock" : "Lock"}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
     </main>
   );
