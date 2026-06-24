@@ -8,6 +8,26 @@ export default function App() {
 const [modalOpen, setModalOpen] = useState(false);
 const [action, setAction] = useState<"lock" | "unlock">("lock");
 const [selectedUser, setSelectedUser] = useState("");
+const [ users , setUsers ] = useState(mockUsers);
+const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+
+function handleConfirmAction () {
+  if (!selectedUserId) return;
+
+  setUsers((currentUsers) =>
+    currentUsers.map((user) =>
+      user.id === selectedUserId
+        ? {
+            ...user,
+            status: action === "lock" ? "locked" : "active",
+            failedAttempts: action === "unlock" ? 0 : user.failedAttempts,
+          }
+        : user
+    )
+  );
+
+  setModalOpen(false);
+}
 
   return (
     <main className="min-h-screen bg-white p-6 text-black">
@@ -35,7 +55,7 @@ const [selectedUser, setSelectedUser] = useState("");
             </thead>
 
             <tbody>
-              {mockUsers.map((user) => (
+              {users.map((user) => (
                 <tr key={user.id} className="border-t border-gray-200">
                   <td className="px-4 py-4">
                     <p className="font-medium">{user.name}</p>
@@ -57,6 +77,7 @@ const [selectedUser, setSelectedUser] = useState("");
                 onClick={() => {
                   setAction(user.status === "locked" ? "unlock" : "lock");
                   setSelectedUser(user.name);
+                  setSelectedUserId(user.id);
                   setModalOpen(true);
                 }}
                 className="rounded-lg hover:opacity-50 hover:cursor-pointer bg-black px-4 py-2 text-white"
@@ -77,6 +98,7 @@ const [selectedUser, setSelectedUser] = useState("");
         action={action}
         userName={selectedUser}
         onClose={() => setModalOpen(false)}
+        onConfirm={handleConfirmAction}
       />
     </main>
   );

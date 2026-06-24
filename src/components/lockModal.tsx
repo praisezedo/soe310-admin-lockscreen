@@ -3,6 +3,7 @@ type LockModalProps = {
   action: "lock" | "unlock";
   userName: string;
   onClose: () => void;
+  onConfirm: () => void;
 };
 
 export default function LockModal({
@@ -10,7 +11,8 @@ export default function LockModal({
   action,
   userName,
   onClose,
-}: LockModalProps) {
+  onConfirm,
+}: LockModalProps){
   if (!open) return null;
 
   return (
@@ -38,11 +40,12 @@ export default function LockModal({
             Cancel
           </button>
 
-          <button
-            className="rounded-lg hover:opacity-50 hover:cursor-pointer bg-black px-4 py-2 text-white"
-          >
-            Confirm
-          </button>
+        <button
+        onClick={onConfirm}
+        className="rounded-lg hover:opacity-50 hover:cursor-pointer bg-black px-4 py-2 text-white"
+        >
+        Confirm
+        </button>
         </div>
       </div>
     </div>
