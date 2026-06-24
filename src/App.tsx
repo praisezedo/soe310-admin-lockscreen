@@ -1,7 +1,7 @@
 import { mockUsers } from "./data/mockUsers";
 import { useState } from "react";
 import LockModal from "./components/lockModal";
-import AuditLogs from "./components/auditLogs";
+import AuditLogs, { type AuditLog } from "./components/auditLogs";
 
 export default function App() {
 
@@ -10,9 +10,13 @@ const [action, setAction] = useState<"lock" | "unlock">("lock");
 const [selectedUser, setSelectedUser] = useState("");
 const [ users , setUsers ] = useState(mockUsers);
 const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+const [logs, setLogs] = useState<AuditLog[]>([]);
 
-function handleConfirmAction () {
+function handleConfirmAction() {
   if (!selectedUserId) return;
+
+  const selectedUserData = users.find((user) => user.id === selectedUserId);
+  if (!selectedUserData) return;
 
   setUsers((currentUsers) =>
     currentUsers.map((user) =>
@@ -25,6 +29,20 @@ function handleConfirmAction () {
         : user
     )
   );
+
+  const newLog: AuditLog = {
+    id: Date.now(),
+    admin: "Praise Innocent",
+    action: action === "lock" ? "locked" : "unlocked",
+    user: selectedUserData.name,
+    reason:
+      action === "lock"
+        ? "Account locked due to security review"
+        : "Account unlocked after admin verification",
+    time: new Date().toLocaleString(),
+  };
+
+  setLogs((currentLogs) => [newLog, ...currentLogs]);
 
   setModalOpen(false);
 }
@@ -89,7 +107,7 @@ function handleConfirmAction () {
               ))}
             </tbody>
           </table>
-          <AuditLogs/>
+          <AuditLogs logs={logs} />
         </div>
       </section>
 
