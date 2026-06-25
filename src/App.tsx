@@ -1,51 +1,58 @@
-import { mockUsers } from "./data/mockUsers";
 import { useState } from "react";
+import { mockUsers } from "./data/mockUsers";
 import LockModal from "./components/lockModal";
 import AuditLogs, { type AuditLog } from "./components/auditLogs";
 
 export default function App() {
+  const [users, setUsers] = useState(mockUsers);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [action, setAction] = useState<"lock" | "unlock">("lock");
+  const [selectedUser, setSelectedUser] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [reason, setReason] = useState("");
 
-const [modalOpen, setModalOpen] = useState(false);
-const [action, setAction] = useState<"lock" | "unlock">("lock");
-const [selectedUser, setSelectedUser] = useState("");
-const [ users , setUsers ] = useState(mockUsers);
-const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-const [logs, setLogs] = useState<AuditLog[]>([]);
-
-function handleConfirmAction() {
-  if (!selectedUserId) return;
-
-  const selectedUserData = users.find((user) => user.id === selectedUserId);
-  if (!selectedUserData) return;
-
-  setUsers((currentUsers) =>
-    currentUsers.map((user) =>
-      user.id === selectedUserId
-        ? {
-            ...user,
-            status: action === "lock" ? "locked" : "active",
-            failedAttempts: action === "unlock" ? 0 : user.failedAttempts,
-          }
-        : user
-    )
-  );
-
-  const newLog: AuditLog = {
-    id: Date.now(),
-    admin: "Praise Innocent",
-    action: action === "lock" ? "locked" : "unlocked",
-    user: selectedUserData.name,
-    reason:
-      action === "lock"
-        ? "Account locked due to security review"
-        : "Account unlocked after admin verification",
-    time: new Date().toLocaleString(),
+  const currentUser = {
+    name: "Praise Innocent",
+    role: "admin",
   };
 
-  setLogs((currentLogs) => [newLog, ...currentLogs]);
+  const isAdmin = currentUser.role === "admin";
 
-  setModalOpen(false);
-}
+  function handleConfirmAction() {
+    if (!selectedUserId || !isAdmin) return;
+
+    const selectedUserData = users.find((user) => user.id === selectedUserId);
+    if (!selectedUserData) return;
+
+    setUsers((currentUsers) =>
+      currentUsers.map((user) =>
+        user.id === selectedUserId
+          ? {
+              ...user,
+              status: action === "lock" ? "locked" : "active",
+              failedAttempts: action === "unlock" ? 0 : user.failedAttempts,
+            }
+          : user
+      )
+    );
+
+    const newLog: AuditLog = {
+      id: Date.now(),
+      admin: currentUser.name,
+      action: action === "lock" ? "locked" : "unlocked",
+      user: selectedUserData.name,
+      reason: reason,
+        // action === "lock"
+        //   ? "Account locked due to failed login threshold"
+        //   : "Account unlocked after admin verification",
+      time: new Date().toLocaleString(),
+    };
+
+    setLogs((currentLogs) => [newLog, ...currentLogs]);
+    setModalOpen(false);
+    setReason("");
+  }
 
   return (
     <main className="min-h-screen bg-white p-6 text-black">
@@ -57,8 +64,19 @@ function handleConfirmAction() {
         </h1>
 
         <p className="mt-2 text-gray-600">
-          View users, monitor failed login attempts, and lock or unlock accounts.
+          View users, monitor failed login attempts, and lock or unlock
+          accounts.
         </p>
+
+        <div className="mt-4 inline-flex rounded-full border border-gray-300 px-4 py-2 text-sm">
+          Logged in as: {currentUser.name} ({currentUser.role})
+        </div>
+
+        {!isAdmin && (
+          <p className="mt-3 text-sm text-red-600">
+            Only administrators can lock or unlock accounts.
+          </p>
+        )}
 
         <div className="mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-white">
           <table className="w-full border-collapse text-left text-sm">
@@ -73,70 +91,78 @@ function handleConfirmAction() {
             </thead>
 
             <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="border-t border-gray-200">
-                  <td className="px-4 py-4">
-                    <p className="font-medium">{user.name}</p>
-                    <p className="text-gray-500">{user.email}</p>
-                  </td>
+              {users.map((user) => {
+                const belowThreshold =
+                  user.status === "active" && user.failedAttempts < 5;
 
-                  <td className="px-4 py-4 capitalize">{user.role}</td>
+                return (
+                  <tr key={user.id} className="border-t border-gray-200">
+                    <td className="px-4 py-4">
+                      <p className="font-medium">{user.name}</p>
+                      <p className="text-gray-500">{user.email}</p>
+                    </td>
 
-                  <td className="px-4 py-4">{user.failedAttempts}
+                    <td className="px-4 py-4 capitalize">{user.role}</td>
 
-                    {
-                    user.failedAttempts >= 5 ? (
-                      <p className="text-xs text-red-500">
-                        Threshold reached
-                      </p>
-                    ) : (
-                      <p className="text-xs text-gray-400">
-                        Below threshold
-                      </p>
-                    )
-                  }
-                  </td>
+                    <td className="px-4 py-4">
+                      <p>{user.failedAttempts}</p>
+                      {user.failedAttempts >= 5 ? (
+                        <p className="text-xs text-red-500">
+                          Threshold reached
+                        </p>
+                      ) : (
+                        <p className="text-xs text-gray-400">
+                          Below threshold
+                        </p>
+                      )}
+                    </td>
 
-                  <td className="px-4 py-4">
-                    <span className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium capitalize">
-                      {user.status}
-                    </span>
-                  </td>
+                    <td className="px-4 py-4">
+                      <span className="rounded-full border border-gray-300 px-3 py-1 text-xs font-medium capitalize">
+                        {user.status}
+                      </span>
+                    </td>
 
-                  <td className="px-4 py-4">
-              <button
-                disabled={
-                  user.status === "active" &&
-                  user.failedAttempts < 5
-                }
-                onClick={() => {
-                  setAction(user.status === "locked" ? "unlock" : "lock");
-                  setSelectedUser(user.name);
-                  setSelectedUserId(user.id);
-                  setModalOpen(true);
-                }}
-                className={`rounded-lg px-4 py-2 text-white ${
-                  user.status === "active" && user.failedAttempts < 5
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-black"
-                }`}
-              >
-                {user.status === "locked" ? "Unlock" : "Lock"}
-              </button>
-                  </td>
-                </tr>
-              ))}
+                    <td className="px-4 py-4">
+                      <button
+                        disabled={!isAdmin || belowThreshold}
+                        onClick={() => {
+                          setAction(
+                            user.status === "locked" ? "unlock" : "lock"
+                          );
+                          setSelectedUser(user.name);
+                          setSelectedUserId(user.id);
+                          setModalOpen(true);
+                        }}
+                        className={`rounded-lg px-4 py-2  text-sm font-medium text-white ${
+                          !isAdmin || belowThreshold
+                            ? "cursor-not-allowed bg-gray-400"
+                            : "bg-black hover:opacity-50 hover:cursor-pointer"
+                        }`}
+                      >
+                        {user.status === "locked" ? "Unlock" : "Lock"}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
-          <AuditLogs logs={logs} />
         </div>
+
+        <AuditLogs logs={logs} />
       </section>
 
       <LockModal
         open={modalOpen}
         action={action}
         userName={selectedUser}
-        onClose={() => setModalOpen(false)}
+        reason={reason}
+        onReasonChange={setReason}
+        onClose={() => {
+          setModalOpen(false);
+          setReason("");
+        }}
         onConfirm={handleConfirmAction}
       />
     </main>

@@ -2,6 +2,8 @@ type LockModalProps = {
   open: boolean;
   action: "lock" | "unlock";
   userName: string;
+  reason: string;
+  onReasonChange: (reason: string) => void;
   onClose: () => void;
   onConfirm: () => void;
 };
@@ -10,6 +12,8 @@ export default function LockModal({
   open,
   action,
   userName,
+  reason,
+  onReasonChange,
   onClose,
   onConfirm,
 }: LockModalProps){
@@ -30,6 +34,8 @@ export default function LockModal({
           placeholder="Reason..."
           className="mt-4 w-full rounded-lg border p-3"
           rows={4}
+          value={reason}
+          onChange={(event) => onReasonChange(event.target.value)}
         />
 
         <div className="mt-6 flex justify-end gap-3">
